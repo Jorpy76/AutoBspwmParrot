@@ -1,36 +1,25 @@
 #! /bin/bash
 
-# Kill LXQT/MATE processes that interfere with BSPWM shortcuts
-killall -q lxqt-globalkeysd 2>/dev/null
-killall -q xbindkeys 2>/dev/null
-killall -q mate-settings-daemon 2>/dev/null
+# wmname - FIX JAVA (MUST BE FIRST)
+wmname LG3D &
+export _JAVA_AWT_WM_NONREPARENTING=1
 
-# Wait for processes to shut down
-sleep 1
+# VMware clipboard
+vmware-user-suid-wrapper &
 
-# sxhkd - MUST start before anything else to grab keyboard shortcuts
+# sxhkd - Simple start with pgrep check
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-# Wait for sxhkd to initialize
-sleep 1
-
-# bspwm
+# bspwm workspaces
 bspc monitor -d I II III IV V VI VII VIII IX X
 
+# bspwm config
 bspc config border_width         0
 bspc config window_gap          15
 bspc config focus_follows_pointer true
-
 bspc config split_ratio          0.50
 bspc config borderless_monocle   true
 bspc config gapless_monocle      true
-
-# bidirectional clipboard
-vmware-user-suid-wrapper &
-
-# fix java error
-wmname LG3D &
-export _JAVA_AWT_WM_NONREPARENTING=1
 
 # wallpaper
 wallpaper=$(cat /home/user_replace/.config/bin/wallpaper)

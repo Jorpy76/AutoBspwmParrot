@@ -90,66 +90,45 @@ done
 # INSTALL THE NECESSARY DEPENDENCIES
 echo -e "\e[32m[*]\e[0m Installing the necessary dependencies ...\n"
 
-# Update package list first
-echo -e "\e[33m[*]\e[0m Updating package lists...\n"
-apt update
+# Install ALL packages in one go - simple and direct (like working script)
+echo -e "\e[33m[*]\e[0m Installing core packages ...\n"
+apt install -y build-essential git vim cmake cmake-data pkg-config meson ninja-build
+apt install -y bspwm sxhkd kitty feh scrot rofi xclip bat locate wmname acpi imagemagick fastfetch
+apt install -y dunst papirus-icon-theme pcmanfm-qt brightnessctl flameshot zsh pulseaudio-utils x11-utils moreutils
+apt install -y libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libasound2-dev
+apt install -y libcairo2-dev libxcb1-dev libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev libxcb-xkb-dev libxcb-xrm-dev libxcb-cursor-dev libpulse-dev libjsoncpp-dev
 
-# Install core window manager components first with verification
-echo -e "\e[33m[*]\e[0m Installing BSPWM and SXHKD ...\n"
-apt install bspwm sxhkd -y
-if ! command -v bspwm &> /dev/null || ! command -v sxhkd &> /dev/null; then
-    echo -e "\e[31m[*]\e[0m CRITICAL: bspwm or sxhkd failed to install!\n"
-    echo -e "\e[31m[*]\e[0m Please run manually: sudo apt install bspwm sxhkd -y\n"
-    exit 1
-fi
-echo -e "\e[32m[*]\e[0m ✓ BSPWM and SXHKD installed successfully\n"
+echo -e "\e[32m[*]\e[0m Core packages installed successfully\n"
 
-# Install polybar with verification
-echo -e "\e[33m[*]\e[0m Installing Polybar ...\n"
-apt install polybar -y
+# Install Polybar from source (like working script)
+echo -e "\e[33m[*]\e[0m Installing Polybar from source ...\n"
 if ! command -v polybar &> /dev/null; then
-    echo -e "\e[31m[*]\e[0m WARNING: Polybar not installed, trying alternative repos...\n"
-    apt install lemonbar -y 2>/dev/null || true
+    mkdir -p ~/github
+    cd ~/github
+    rm -rf polybar
+    git clone --recursive https://github.com/polybar/polybar
+    cd polybar
+    mkdir -p build
+    cd build
+    cmake ..
+    make -j$(nproc)
+    make install
+    cd "$installation_folder"
+    echo -e "\e[32m[*]\e[0m ✓ Polybar installed from source\n"
+else
+    echo -e "\e[32m[*]\e[0m ✓ Polybar already installed\n"
 fi
 
-# Install essential dependencies
-echo -e "\e[33m[*]\e[0m Installing essential dependencies ...\n"
-apt install dunst papirus-icon-theme imagemagick feh xclip suckless-tools rofi kitty zsh x11-utils moreutils pcmanfm-qt brightnessctl -y
+# Install Picom
+echo -e "\e[33m[*]\e[0m Installing Picom ...\n"
+apt install -y picom
 
-# Install optional but recommended packages
-echo -e "\e[33m[*]\e[0m Installing additional tools ...\n"
-apt install flameshot pulseaudio-utils wmname -y 2>/dev/null || echo -e "\e[33m[*]\e[0m Some optional packages were not found, continuing...\n"
-
-# Install modern CLI tools (may not be in all repos)
-echo -e "\e[33m[*]\e[0m Installing modern CLI tools ...\n"
-apt install bat lsd fzf fastfetch -y 2>/dev/null || {
-    echo -e "\e[33m[*]\e[0m Some modern CLI tools not available in repos, will use alternatives\n"
-    apt install batcat fd-find -y 2>/dev/null || true
-}
-
-# Install betterlockscreen
-echo -e "\e[33m[*]\e[0m Installing betterlockscreen ...\n"
-apt install betterlockscreen -y 2>/dev/null || {
-    echo -e "\e[33m[*]\e[0m betterlockscreen not in repos, installing from source...\n"
-    wget https://raw.githubusercontent.com/betterlockscreen/betterlockscreen/main/install.sh -O - -q | bash -s system
-}
-
-# Verify critical installations
+# Verification (simple)
 echo -e "\e[32m[*]\e[0m Verifying installations...\n"
-missing_packages=""
-for pkg in bspwm sxhkd kitty rofi; do
-    if ! command -v $pkg &> /dev/null; then
-        missing_packages="$missing_packages $pkg"
-    fi
-done
-
-if [ -n "$missing_packages" ]; then
-    echo -e "\e[31m[*]\e[0m ERROR: Missing critical packages:$missing_packages\n"
-    echo -e "\e[31m[*]\e[0m Installation cannot continue\n"
-    exit 1
-fi
-
-echo -e "\e[32m[*]\e[0m ✓ All critical packages verified successfully\n"
+command -v bspwm &> /dev/null && echo -e "\e[32m[*]\e[0m ✓ BSPWM installed\n" || echo -e "\e[31m[*]\e[0m ✗ BSPWM missing\n"
+command -v sxhkd &> /dev/null && echo -e "\e[32m[*]\e[0m ✓ SXHKD installed\n" || echo -e "\e[31m[*]\e[0m ✗ SXHKD missing\n"
+command -v polybar &> /dev/null && echo -e "\e[32m[*]\e[0m ✓ Polybar installed\n" || echo -e "\e[31m[*]\e[0m ✗ Polybar missing\n"
+command -v kitty &> /dev/null && echo -e "\e[32m[*]\e[0m ✓ Kitty installed\n" || echo -e "\e[31m[*]\e[0m ✗ Kitty missing\n"
 
 # REMOVE OLD CONFIGURATIONS
 echo -e "\e[32m[*]\e[0m Removing old configurations ...\n"
