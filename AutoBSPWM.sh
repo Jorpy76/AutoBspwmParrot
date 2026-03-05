@@ -89,7 +89,35 @@ done
 
 # INSTALL THE NECESSARY DEPENDENCIES
 echo -e "\e[32m[*]\e[0m Installing the necessary dependencies ...\n"
-apt install dunst papirus-icon-theme imagemagick feh xclip bspwm sxhkd suckless-tools fastfetch polybar betterlockscreen bat lsd fzf flameshot rofi kitty zsh pulseaudio-utils x11-utils moreutils pcmanfm-qt -y
+
+# Install core window manager components first
+echo -e "\e[33m[*]\e[0m Installing BSPWM and SXHKD ...\n"
+apt install bspwm sxhkd -y || {
+    echo -e "\e[31m[*]\e[0m Failed to install bspwm/sxhkd. Please install manually with: sudo apt install bspwm sxhkd -y\n"
+    exit 1
+}
+
+# Install essential dependencies
+echo -e "\e[33m[*]\e[0m Installing essential dependencies ...\n"
+apt install dunst papirus-icon-theme imagemagick feh xclip suckless-tools rofi kitty zsh x11-utils moreutils pcmanfm-qt -y
+
+# Install optional but recommended packages
+echo -e "\e[33m[*]\e[0m Installing additional tools ...\n"
+apt install polybar flameshot pulseaudio-utils -y 2>/dev/null || echo -e "\e[33m[*]\e[0m Some optional packages were not found, continuing...\n"
+
+# Install modern CLI tools (may not be in all repos)
+echo -e "\e[33m[*]\e[0m Installing modern CLI tools ...\n"
+apt install bat lsd fzf fastfetch -y 2>/dev/null || {
+    echo -e "\e[33m[*]\e[0m Some modern CLI tools not available in repos, will use alternatives\n"
+    apt install batcat fd-find -y 2>/dev/null || true
+}
+
+# Install betterlockscreen
+echo -e "\e[33m[*]\e[0m Installing betterlockscreen ...\n"
+apt install betterlockscreen -y 2>/dev/null || {
+    echo -e "\e[33m[*]\e[0m betterlockscreen not in repos, installing from source...\n"
+    wget https://raw.githubusercontent.com/betterlockscreen/betterlockscreen/main/install.sh -O - -q | bash -s system
+}
 
 # REMOVE OLD CONFIGURATIONS
 echo -e "\e[32m[*]\e[0m Removing old configurations ...\n"
