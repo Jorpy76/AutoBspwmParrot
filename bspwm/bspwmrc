@@ -1,5 +1,19 @@
 #! /bin/bash
 
+# Kill LXQT/MATE processes that interfere with BSPWM shortcuts
+killall -q lxqt-globalkeysd 2>/dev/null
+killall -q xbindkeys 2>/dev/null
+killall -q mate-settings-daemon 2>/dev/null
+
+# Wait for processes to shut down
+sleep 1
+
+# sxhkd - MUST start before anything else to grab keyboard shortcuts
+pgrep -x sxhkd > /dev/null || sxhkd &
+
+# Wait for sxhkd to initialize
+sleep 1
+
 # bspwm
 bspc monitor -d I II III IV V VI VII VIII IX X
 
@@ -24,9 +38,6 @@ feh --bg-fill /home/user_replace/Wallpapers/$wallpaper &
 
 # dunst
 pgrep -x dunst > /dev/null || dunst &
-
-# sxhkd
-pgrep -x sxhkd > /dev/null || sxhkd &
 
 # brightness
 brightness=$(cat /sys/class/backlight/*/brightness)
